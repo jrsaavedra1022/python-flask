@@ -1,23 +1,16 @@
-from flask import  Flask, request, make_response, redirect, render_template, session, url_for, flash
-from flask_bootstrap import Bootstrap
-from flask_wtf import FlaskForm
-from wtforms.fields import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
 import unittest
+from flask import request, make_response, redirect, render_template, session, url_for, flash, jsonify
+from flask_login import login_required, current_user
+from app import create_app
+from app.form import LoginForm, TodoForm, DeleteTask, UpdateTask
+from app.fix import getUsers, getUser, getTasksByUserId, todo_put, delete_task, update_task
 
-app = Flask(__name__)
-bootstrap = Bootstrap(app)
-
-app.config['SECRET_KEY'] = 'SUPER SECRETO'
+app = create_app()
 
 todos = ['Comprar café', 'Solitud de compra', 'Entregar video a productor']
 
 
-class LoginForm(FlaskForm):
-    """ clase de login. """
-    username = StringField("Nombre de usuario", validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Enviar')
+
 
 @app.cli.command()
 def test():
@@ -44,26 +37,52 @@ def index():
 
 
 @app.route('/hello', methods=['GET', 'POST'])
+@login_required
 def hello():
-    # user_ip = request.cookies.get('user_ip')
     user_ip = session.get('user_ip')
-    login_form = LoginForm()
-    username = session.get('username')
+    username = current_user.id
+    todo_form = TodoForm()
+    delete_form = DeleteTask()
+    update_form = UpdateTask()
 
     context = {
         'user_ip': user_ip,
-        'todos': todos,
-        'login_form': login_form,
-        'username': username
+        'todos': getTasksByUserId(username),
+        'username': username,
+        'todo_form': todo_form,
+        'delete_form': delete_form,
+        'udpate_form': update_form,
     }
 
-    if login_form.validate_on_submit():
-        username = login_form.username.data
-        session['username'] = username
+    if todo_form.validate_on_submit():
+        todo_put(username=username, description=todo_form.description.data)
 
-        flash('Nombre de usuario registrado correctamente !')
-
-        return redirect(url_for('index'))
+        flash("Tu tarea se creo con exito !!")
+        return redirect(url_for('hello'))
 
     return render_template('hello.html', **context)
 
+@app.route('/todos/delete/<todo_id>', methods=['POST'])
+def delete(todo_id):
+    delete_task(todo_id)
+
+    return redirect(url_for('hello'))
+
+@app.route('/todos/update/<todo_id>/<int:is_done>', methods=['POST'])
+def update(todo_id, is_done):
+    update_task(todo_id, is_done)
+    return redirect(url_for('hello'))
+
+@app.route('/users')
+def users():
+    users = getUsers()
+    tasks = getTasksByUserId('jrsaavedra')
+    # print(tasks)
+    user = getUser('jrsaavedra')
+    if user is not None:
+        a = user.check_password("12a3Admin")
+        print(a)
+        print("here .... user ...")
+    print(user)
+
+    return jsonify(users)

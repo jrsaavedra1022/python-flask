@@ -17,16 +17,15 @@
     {% else %}
     <a href="{{ url_for('index') }}">Ir al inicio</a>
     {% endif %}
+
     <div class="container">
-        <!-- <form action="{{ url_for('hello')}}">
-            {{ login_form.username }}
-            {{ login_form.username.label }}
-        </form> -->
-        {{ wtf.quick_form(login_form) }}
+        <h2>Crear una tarea</h2>
+        {{ wtf.quick_form(todo_form)}}
     </div>
-    <ul>
+
+    <ul class="list-group"> 
         {% for todo in todos %}
-            {{ macros.render_todo(todo) }}
+            {{ macros.render_todo(todo, delete_form, udpate_form) }}
         {% endfor %}
     </ul>
 {% endblock %}

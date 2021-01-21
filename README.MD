@@ -18,3 +18,6 @@ set FLASK_DEBUG=1
 vs Code jinja plugin
 # poner flask en development
 set FLASK_ENV=development
+# correr test
+flask test
+# install flask sql alchemy -> bases de datos sql

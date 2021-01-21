@@ -2,3 +2,7 @@ flask
 flask-bootstrap
 flask-wtf
 flask-testing
+blinker
+flask-sqlalchemy 
+marshmallow-sqlalchemy
+flask-login==0.4.1
